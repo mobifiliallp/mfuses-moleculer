@@ -4,18 +4,19 @@
   "description": "Mobifilia uServices (MFuSes) - Moleculer service wrapper.",
   "main": "index.js",
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=8.11.3",
+    "npm": ">=6.1.0"
   },
   "scripts": {
     "lint": "eslint .",
-    "start": "node server.js"
+    "start": "node main.js"
   },
   "author": "Gopal Raichur",
   "license": "ISC",
   "dependencies": {
     "config": "^1.30.0",
-    "mf-logwrapper": "git+ssh://git-user@git.chavdi.com:/srv/git/mf/mf-logwrapper.git#semver:^v1.0.0",
     "lodash": "^4.17.10",
+    "mf-logwrapper": "git+ssh://git-user@git.chavdi.com:/srv/git/mf/mf-logwrapper.git#semver:^1.0.0",
     "moleculer": "^0.12.7"
   },
   "private": true,
