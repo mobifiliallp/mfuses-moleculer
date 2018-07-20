@@ -9,6 +9,9 @@
  *
  * Configuration -
  *   "usMoleculer": {
+ *     "logger": {
+ *       "level": "info"
+ *     },
  *     "config": {
  *       "namespace": "mol-default",
  *       "transporter": "nats://localhost:4222"
@@ -19,6 +22,7 @@
  *       "path": "/srvapi"
  *     }
  *   }
+ * usMolecular.logger.level - Logger level for service logging. Defaults to 'info'.
  * usMolecular.config.namespace - Unique namespace for related services/modules. Defaults to 'mol-default'.
  * usMolecular.config.transporter - The underlying transporter configuration, refer moleculer docs for details. Defaults to TCP (not recommended).
  * usMolecular.config.registry - optional - registry settings, refer moleculer docs for details. Defaults to 'Random' strategy.
@@ -49,14 +53,27 @@ let webApiSettings = {
   path: '/srvapi',
 };
 
+// Default logger config
+let loggerSettings = {
+  level: 'info',
+};
+
 // Merge service configuration from application config
 if (config.has('usMoleculer.config')) {
-  const localServiceConfig = config.get('usMoleculer.config');
-  serviceConfig = _.mergeWith(serviceConfig, localServiceConfig);
+  const appServiceConfig = config.get('usMoleculer.config');
+  serviceConfig = _.mergeWith(serviceConfig, appServiceConfig);
 }
 
+// Merge logger configuration from application config
+if (config.has('usMoleculer.logger')) {
+  const appLoggerSettings = config.get('usMoleculer.logger');
+  loggerSettings = _.mergeWith(loggerSettings, appLoggerSettings);
+}
 const serviceLogger = logWrapper.getLogger('usMoleculer');
-serviceConfig.logger = bindings => serviceLogger.child(bindings);
+serviceConfig.logger = (bindings) => {
+  const bindingsWithLoggerSettings = _.mergeWith(bindings, loggerSettings);
+  return serviceLogger.child(bindingsWithLoggerSettings);
+};
 
 logger.trace(serviceConfig, 'Configuring moleculer service');
 
@@ -66,9 +83,10 @@ broker.start();
 
 // moleculer-web is disabled by default, check if application config overrides it
 if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebApi')) {
+  // Merge web API configuration from application config
   if (config.has('usMoleculer.webApiSettings')) {
-    const localWebApiSettings = config.get('usMoleculer.webApiSettings');
-    webApiSettings = _.mergeWith(webApiSettings, localWebApiSettings);
+    const appWebApiSettings = config.get('usMoleculer.webApiSettings');
+    webApiSettings = _.mergeWith(webApiSettings, appWebApiSettings);
   }
 
   try {
