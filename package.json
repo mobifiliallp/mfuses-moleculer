@@ -16,35 +16,17 @@
   "dependencies": {
     "config": "^1.30.0",
     "lodash": "^4.17.10",
-    "mf-logwrapper": "git+ssh://git-user@git.chavdi.com:/srv/git/mf/mf-logwrapper.git#semver:^1.0.0",
+    "mf-logwrapper": "git+https://github.com/mobifiliallp/mf-logwrapper.git#semver:^1.0.0",
     "moleculer": "^0.12.7"
   },
   "private": true,
   "devDependencies": {
+    "eslint-config-mfnode": "git+https://github.com/mobifiliallp/eslint-config-mfnode.git#semver:^1.0.0",
     "eslint": "^4.19.1",
-    "eslint-config-airbnb": "^16.1.0",
-    "eslint-plugin-import": "^2.11.0",
-    "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.7.0"
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
   },
   "eslintConfig": {
-    "extends": [
-      "airbnb"
-    ],
-    "rules": {
-      "no-underscore-dangle": "off",
-      "max-len": "off",
-      "object-shorthand": "off",
-      "prefer-destructuring": "off",
-      "no-param-reassign": "off",
-      "no-else-return": "off",
-      "no-prototype-builtins": "off",
-      "no-mixed-operators": [
-        "error",
-        {
-          "allowSamePrecedence": true
-        }
-      ]
-    }
+    "extends": "eslint-config-mfnode"
   }
 }
