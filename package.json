@@ -1,6 +1,6 @@
 {
   "name": "mfuses-moleculer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Mobifilia uServices (MFuSes) - Moleculer service wrapper.",
   "main": "index.js",
   "engines": {
