@@ -31,7 +31,8 @@
  * usMolecular.webApiSettings.path - path prefix for the web API module. All APIs will begin with this prefix. Defaults to '/srvapi'
  *
  */
-const { ServiceBroker } = require('moleculer');
+
+const Molecular = require('moleculer');
 const config = require('config');
 const _ = require('lodash');
 const logWrapper = require('mf-logwrapper');
@@ -78,7 +79,7 @@ serviceConfig.logger = (bindings) => {
 logger.trace(serviceConfig, 'Configuring moleculer service');
 
 // Create and start the broker
-const broker = new ServiceBroker(serviceConfig);
+const broker = new Molecular.ServiceBroker(serviceConfig);
 broker.start();
 
 // moleculer-web is disabled by default, check if application config overrides it
@@ -105,3 +106,6 @@ if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebA
  * Moleculer service broker.
  */
 module.exports.serviceBroker = broker;
+
+// export core molecular object too
+module.exports.Molecular = Molecular;
