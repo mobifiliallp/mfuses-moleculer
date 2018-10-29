@@ -32,7 +32,7 @@
  *
  */
 
-const Molecular = require('moleculer');
+const Moleculer = require('moleculer');
 const config = require('config');
 const _ = require('lodash');
 const logWrapper = require('mf-logwrapper');
@@ -79,7 +79,7 @@ serviceConfig.logger = (bindings) => {
 logger.trace(serviceConfig, 'Configuring moleculer service');
 
 // Create and start the broker
-const broker = new Molecular.ServiceBroker(serviceConfig);
+const broker = new Moleculer.ServiceBroker(serviceConfig);
 broker.start();
 
 // moleculer-web is disabled by default, check if application config overrides it
@@ -108,4 +108,4 @@ if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebA
 module.exports.serviceBroker = broker;
 
 // export core molecular object too
-module.exports.Molecular = Molecular;
+module.exports.Moleculer = Moleculer;
