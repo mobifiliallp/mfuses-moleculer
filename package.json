@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "config": "^1.30.0",
+    "is-stream": "^1.1.0",
     "lodash": "^4.17.10",
     "mf-logwrapper": "git+https://github.com/mobifiliallp/mf-logwrapper.git#semver:^1.0.0",
     "moleculer": "^0.12.7"

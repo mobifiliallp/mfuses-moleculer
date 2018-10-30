@@ -35,6 +35,7 @@
 const Moleculer = require('moleculer');
 const config = require('config');
 const _ = require('lodash');
+const isStream = require('is-stream');
 const logWrapper = require('mf-logwrapper');
 
 const logger = logWrapper.getContextLogger('mfuses-moleculer');
@@ -104,8 +105,63 @@ if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebA
 
 /**
  * Moleculer service broker.
+ * @deprecated
  */
 module.exports.serviceBroker = broker;
+
+/**
+ * MFuSes service broker.
+ */
+module.exports.mfusesBroker = broker;
+
+/**
+ * Calls a service.
+ * @param {String} actionName The service action to call.
+ * @param {Any} callParams Parameters for the call, can be a stream.
+ * @param {Object} callOptions Options for the call.
+ * @returns Promise
+ */
+function call(actionName, callParams, callOptions) {
+  logger.traceF('call', { actionName, callOptions });
+
+  let finalCallParams;
+  if (isStream(callParams)) {
+    finalCallParams = callParams;
+  } else {
+    finalCallParams = Object.assign({}, callParams);
+  }
+
+  const finalCallOptions = Object.assign({}, callOptions);
+
+  const callResult = broker.call(actionName, finalCallParams, finalCallOptions);
+  callResult.catch((e) => {
+    logger.error(e, `Error calling ${actionName}`);
+  });
+
+  return callResult;
+}
+
+function emit(eventName, payload, groups) {
+  logger.traceF('emit', { eventName, groups });
+
+  broker.emit(eventName, payload, groups);
+}
+
+function broadcast(eventName, payload, groups) {
+  logger.traceF('broadcast', { eventName, groups });
+
+  broker.broadcast(eventName, payload, groups);
+}
+
+/**
+ * MFuSes service, event calling helper.
+ */
+const mfusesHelper = {
+  call,
+  emit,
+  broadcast,
+};
+module.exports.mfusesHelper = mfusesHelper;
 
 // export core molecular object too
 module.exports.Moleculer = Moleculer;
