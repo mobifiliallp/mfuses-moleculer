@@ -8,26 +8,20 @@
     "npm": ">=6.1.0"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "standard",
     "start": "node main.js"
   },
   "author": "Gopal Raichur",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "config": "^1.30.0",
+    "config": "^3.2.2",
     "is-stream": "^1.1.0",
-    "lodash": "^4.17.10",
-    "mf-logwrapper": "git+https://github.com/mobifiliallp/mf-logwrapper.git#semver:^1.0.0",
-    "moleculer": "^0.12.7"
+    "lodash": "^4.17.15",
+    "mf-logger": "github:mobifiliallp/mf-logger",
+    "moleculer": "^0.13.10"
   },
   "private": true,
   "devDependencies": {
-    "eslint-config-mfnode": "git+https://github.com/mobifiliallp/eslint-config-mfnode.git#semver:^1.0.0",
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0"
-  },
-  "eslintConfig": {
-    "extends": "eslint-config-mfnode"
+    "standard": "^14.1.0"
   }
 }

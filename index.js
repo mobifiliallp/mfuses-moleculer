@@ -22,84 +22,82 @@
  *       "path": "/srvapi"
  *     }
  *   }
- * usMolecular.logger.level - Logger level for service logging. Defaults to 'info'.
- * usMolecular.config.namespace - Unique namespace for related services/modules. Defaults to 'mol-default'.
- * usMolecular.config.transporter - The underlying transporter configuration, refer moleculer docs for details. Defaults to TCP (not recommended).
- * usMolecular.config.registry - optional - registry settings, refer moleculer docs for details. Defaults to 'Random' strategy.
- * usMolecular.enableWebApi - true/false - Enable/disable the web API module. Defaults to false.
- * usMolecular.webApiSettings.port - port for the web API module. Defaults to 8080.
- * usMolecular.webApiSettings.path - path prefix for the web API module. All APIs will begin with this prefix. Defaults to '/srvapi'
+ * usMoleculer.logger.level - Logger level for service logging. Defaults to 'info'.
+ * usMoleculer.config.namespace - Unique namespace for related services/modules. Defaults to 'mol-default'.
+ * usMoleculer.config.transporter - The underlying transporter configuration, refer moleculer docs for details. Defaults to TCP (not recommended).
+ * usMoleculer.config.registry - optional - registry settings, refer moleculer docs for details. Defaults to 'Random' strategy.
+ * usMoleculer.enableWebApi - true/false - Enable/disable the web API module. Defaults to false.
+ * usMoleculer.webApiSettings.port - port for the web API module. Defaults to 8080.
+ * usMoleculer.webApiSettings.path - path prefix for the web API module. All APIs will begin with this prefix. Defaults to '/srvapi'
  *
  */
 
-const Moleculer = require('moleculer');
-const config = require('config');
-const _ = require('lodash');
-const isStream = require('is-stream');
-const logWrapper = require('mf-logwrapper');
+const Moleculer = require('moleculer')
+const config = require('config')
+const lodash = require('lodash')
+const isStream = require('is-stream')
+const MfLogger = require('mf-logger')
 
-const logger = logWrapper.getContextLogger('mfuses-moleculer');
+const logger = MfLogger.getContextLogger('mfuses-moleculer')
 
 // The default service configuration
 let serviceConfig = {
   namespace: 'mol-default',
   transporter: 'TCP',
   registry: {
-    strategy: 'Random',
-  },
-};
+    strategy: 'Random'
+  }
+}
 
 // Defaut moleculer-web settings
 let webApiSettings = {
   port: 8080,
-  path: '/srvapi',
-};
+  path: '/srvapi'
+}
 
 // Default logger config
-let loggerSettings = {
-  level: 'info',
-};
+let loggerSettings = {}
 
 // Merge service configuration from application config
 if (config.has('usMoleculer.config')) {
-  const appServiceConfig = config.get('usMoleculer.config');
-  serviceConfig = _.mergeWith(serviceConfig, appServiceConfig);
+  const appServiceConfig = config.get('usMoleculer.config')
+  serviceConfig = lodash.mergeWith(serviceConfig, appServiceConfig)
 }
 
 // Merge logger configuration from application config
 if (config.has('usMoleculer.logger')) {
-  const appLoggerSettings = config.get('usMoleculer.logger');
-  loggerSettings = _.mergeWith(loggerSettings, appLoggerSettings);
+  const appLoggerSettings = config.get('usMoleculer.logger')
+  loggerSettings = lodash.mergeWith(loggerSettings, appLoggerSettings)
 }
-const serviceLogger = logWrapper.getLogger('usMoleculer');
+const serviceLogger = MfLogger.getContextLogger('usMoleculer').getCoreLogger()
 serviceConfig.logger = (bindings) => {
-  const bindingsWithLoggerSettings = _.mergeWith(bindings, loggerSettings);
-  return serviceLogger.child(bindingsWithLoggerSettings);
-};
+  const bindingsWithLoggerSettings = lodash.mergeWith(bindings, loggerSettings)
+  return serviceLogger.child(bindingsWithLoggerSettings)
+}
 
-logger.trace(serviceConfig, 'Configuring moleculer service');
+logger.trace(serviceConfig, 'Configuring moleculer service')
 
 // Create and start the broker
-const broker = new Moleculer.ServiceBroker(serviceConfig);
-broker.start();
+const broker = new Moleculer.ServiceBroker(serviceConfig)
+broker.start()
 
 // moleculer-web is disabled by default, check if application config overrides it
 if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebApi')) {
   // Merge web API configuration from application config
   if (config.has('usMoleculer.webApiSettings')) {
-    const appWebApiSettings = config.get('usMoleculer.webApiSettings');
-    webApiSettings = _.mergeWith(webApiSettings, appWebApiSettings);
+    const appWebApiSettings = config.get('usMoleculer.webApiSettings')
+    webApiSettings = lodash.mergeWith(webApiSettings, appWebApiSettings)
   }
 
   try {
-    const ApiService = require('moleculer-web'); // eslint-disable-line global-require, import/no-unresolved
+    const ApiService = require('moleculer-web') // eslint-disable-line global-require, import/no-unresolved
 
     broker.createService({
       mixins: [ApiService],
-      settings: webApiSettings,
-    });
+      settings: webApiSettings
+    })
   } catch (e) {
-    logger.error(e, 'Failed to start moleculer web module, ensure it is added to your main project as a dependency');
+    logger.error(e, 'Failed to start moleculer web module, ensure it is added to your main project as a dependency')
   }
 }
 
@@ -107,12 +105,12 @@ if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebA
  * Moleculer service broker.
  * @deprecated
  */
-module.exports.serviceBroker = broker;
+module.exports.serviceBroker = broker
 
 /**
  * MFuSes service broker.
  */
-module.exports.mfusesBroker = broker;
+module.exports.mfusesBroker = broker
 
 /**
  * Calls a service.
@@ -121,36 +119,36 @@ module.exports.mfusesBroker = broker;
  * @param {Object} callOptions Options for the call.
  * @returns Promise
  */
-function call(actionName, callParams, callOptions) {
-  logger.traceF('call', { actionName, callOptions });
+function call (actionName, callParams, callOptions) {
+  logger.traceF('call', { actionName, callOptions })
 
-  let finalCallParams;
+  let finalCallParams
   if (isStream(callParams)) {
-    finalCallParams = callParams;
+    finalCallParams = callParams
   } else {
-    finalCallParams = Object.assign({}, callParams);
+    finalCallParams = Object.assign({}, callParams)
   }
 
-  const finalCallOptions = Object.assign({}, callOptions);
+  const finalCallOptions = Object.assign({}, callOptions)
 
-  const callResult = broker.call(actionName, finalCallParams, finalCallOptions);
+  const callResult = broker.call(actionName, finalCallParams, finalCallOptions)
   callResult.catch((e) => {
-    logger.error(e, `Error calling ${actionName}`);
-  });
+    logger.error(e, `Error calling ${actionName}`)
+  })
 
-  return callResult;
+  return callResult
 }
 
-function emit(eventName, payload, groups) {
-  logger.traceF('emit', { eventName, groups });
+function emit (eventName, payload, groups) {
+  logger.traceF('emit', { eventName, groups })
 
-  broker.emit(eventName, payload, groups);
+  broker.emit(eventName, payload, groups)
 }
 
-function broadcast(eventName, payload, groups) {
-  logger.traceF('broadcast', { eventName, groups });
+function broadcast (eventName, payload, groups) {
+  logger.traceF('broadcast', { eventName, groups })
 
-  broker.broadcast(eventName, payload, groups);
+  broker.broadcast(eventName, payload, groups)
 }
 
 /**
@@ -159,9 +157,9 @@ function broadcast(eventName, payload, groups) {
 const mfusesHelper = {
   call,
   emit,
-  broadcast,
-};
-module.exports.mfusesHelper = mfusesHelper;
+  broadcast
+}
+module.exports.mfusesHelper = mfusesHelper
 
 // export core molecular object too
-module.exports.Moleculer = Moleculer;
+module.exports.Moleculer = Moleculer
