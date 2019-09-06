@@ -8,7 +8,7 @@
  * https://moleculer.services/0.12/docs/transporters.html
  *
  * Configuration -
- *   "usMoleculer": {
+ *   "mfuses": {
  *     "logger": {
  *       "level": "info"
  *     },
@@ -22,14 +22,13 @@
  *       "path": "/srvapi"
  *     }
  *   }
- * usMoleculer.logger.level - Logger level for service logging. Defaults to 'info'.
- * usMoleculer.config.namespace - Unique namespace for related services/modules. Defaults to 'mol-default'.
- * usMoleculer.config.transporter - The underlying transporter configuration, refer moleculer docs for details. Defaults to TCP (not recommended).
- * usMoleculer.config.registry - optional - registry settings, refer moleculer docs for details. Defaults to 'Random' strategy.
- * usMoleculer.enableWebApi - true/false - Enable/disable the web API module. Defaults to false.
- * usMoleculer.webApiSettings.port - port for the web API module. Defaults to 8080.
- * usMoleculer.webApiSettings.path - path prefix for the web API module. All APIs will begin with this prefix. Defaults to '/srvapi'
- *
+ * mfuses.logger.level - Logger level for service logging. Defaults to 'info'.
+ * mfuses.config.namespace - Unique namespace for related services/modules. Defaults to 'mol-default'.
+ * mfuses.config.transporter - The underlying transporter configuration, refer moleculer docs for details. Defaults to TCP (not recommended).
+ * mfuses.config.registry - optional - registry settings, refer moleculer docs for details. Defaults to 'Random' strategy.
+ * mfuses.enableWebApi - true/false - Enable/disable the web API module. Defaults to false.
+ * mfuses.webApiSettings.port - port for the web API module. Defaults to 8080.
+ * mfuses.webApiSettings.path - path prefix for the web API module. All APIs will begin with this prefix. Defaults to '/srvapi'
  */
 
 const Moleculer = require('moleculer')
@@ -42,7 +41,7 @@ const logger = MfLogger.getContextLogger('mfuses-moleculer')
 
 // The default service configuration
 let serviceConfig = {
-  namespace: 'mol-default',
+  namespace: 'MFuSes-default',
   transporter: 'TCP',
   registry: {
     strategy: 'Random'
@@ -57,24 +56,60 @@ let webApiSettings = {
 
 // Default logger config
 let loggerSettings = {}
+if (config.has('mfuses')) {
+  // Merge service configuration from application config
+  if (config.has('mfuses.config')) {
+    const appServiceConfig = config.get('mfuses.config')
+    serviceConfig = lodash.mergeWith(serviceConfig, appServiceConfig)
+  }
 
-// Merge service configuration from application config
-if (config.has('usMoleculer.config')) {
-  const appServiceConfig = config.get('usMoleculer.config')
-  serviceConfig = lodash.mergeWith(serviceConfig, appServiceConfig)
-}
+  // Merge logger configuration from application config
+  if (config.has('mfuses.logger')) {
+    const appLoggerSettings = config.get('mfuses.logger')
+    loggerSettings = lodash.mergeWith(loggerSettings, appLoggerSettings)
+  }
+  const serviceLogger = MfLogger.getContextLogger('mfuses').getCoreLogger()
+  serviceConfig.logger = (bindings) => {
+    const bindingsWithLoggerSettings = lodash.mergeWith(bindings, loggerSettings)
+    return serviceLogger.child(bindingsWithLoggerSettings)
+  }
+} else if (config.has('usMoleculer')) {
+  logger.warn('The \'usMoleculer\' configuration entry is deprecated, use \'mfuses\' instead')
+  // Merge service configuration from application config
+  if (config.has('usMoleculer.config')) {
+    const appServiceConfig = config.get('usMoleculer.config')
+    serviceConfig = lodash.mergeWith(serviceConfig, appServiceConfig)
+  }
 
-// Merge logger configuration from application config
-if (config.has('usMoleculer.logger')) {
-  const appLoggerSettings = config.get('usMoleculer.logger')
-  loggerSettings = lodash.mergeWith(loggerSettings, appLoggerSettings)
-}
-const serviceLogger = MfLogger.getContextLogger('usMoleculer').getCoreLogger()
-serviceConfig.logger = (bindings) => {
-  const bindingsWithLoggerSettings = lodash.mergeWith(bindings, loggerSettings)
-  return serviceLogger.child(bindingsWithLoggerSettings)
-}
+  // Merge logger configuration from application config
+  if (config.has('usMoleculer.logger')) {
+    const appLoggerSettings = config.get('usMoleculer.logger')
+    loggerSettings = lodash.mergeWith(loggerSettings, appLoggerSettings)
+  }
+  const serviceLogger = MfLogger.getContextLogger('usMoleculer').getCoreLogger()
+  serviceConfig.logger = (bindings) => {
+    const bindingsWithLoggerSettings = lodash.mergeWith(bindings, loggerSettings)
+    return serviceLogger.child(bindingsWithLoggerSettings)
+  }
+} else {
+  logger.warn('The \'mol-service\' configuration entry is deprecated, use \'mfuses\' instead')
+  // Merge service configuration from application config
+  if (config.has('mol-service.config')) {
+    const appServiceConfig = config.get('mol-service.config')
+    serviceConfig = lodash.mergeWith(serviceConfig, appServiceConfig)
+  }
 
+  // Merge logger configuration from application config
+  if (config.has('mol-service.logger')) {
+    const appLoggerSettings = config.get('mol-service.logger')
+    loggerSettings = lodash.mergeWith(loggerSettings, appLoggerSettings)
+  }
+  const serviceLogger = MfLogger.getContextLogger('mol-service').getCoreLogger()
+  serviceConfig.logger = (bindings) => {
+    const bindingsWithLoggerSettings = lodash.mergeWith(bindings, loggerSettings)
+    return serviceLogger.child(bindingsWithLoggerSettings)
+  }
+}
 logger.trace(serviceConfig, 'Configuring moleculer service')
 
 // Create and start the broker
@@ -82,10 +117,14 @@ const broker = new Moleculer.ServiceBroker(serviceConfig)
 broker.start()
 
 // moleculer-web is disabled by default, check if application config overrides it
-if (config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebApi')) {
+if ((config.has('usMoleculer.enableWebApi') && config.get('usMoleculer.enableWebApi')) ||
+  (config.has('mol-service.enableWebApi') && config.get('mol-service.enableWebApi'))) {
   // Merge web API configuration from application config
   if (config.has('usMoleculer.webApiSettings')) {
     const appWebApiSettings = config.get('usMoleculer.webApiSettings')
+    webApiSettings = lodash.mergeWith(webApiSettings, appWebApiSettings)
+  } else if (config.has('mol-service.webApiSettings')) {
+    const appWebApiSettings = config.get('mol-service.webApiSettings')
     webApiSettings = lodash.mergeWith(webApiSettings, appWebApiSettings)
   }
 
@@ -115,7 +154,7 @@ module.exports.mfusesBroker = broker
 /**
  * Calls a service.
  * @param {String} actionName The service action to call.
- * @param {Any} callParams Parameters for the call, can be a stream.
+ * @param {Object|stream} callParams Parameters for the call, can be a stream.
  * @param {Object} callOptions Options for the call.
  * @returns Promise
  */
@@ -139,12 +178,24 @@ function call (actionName, callParams, callOptions) {
   return callResult
 }
 
+/**
+ * Emit an event.
+ * @param {string} eventName The event name.
+ * @param {Object} payload The event data / payload.
+ * @param {string|string[]} groups The groups to send the event to.
+ */
 function emit (eventName, payload, groups) {
   logger.traceF('emit', { eventName, groups })
 
   broker.emit(eventName, payload, groups)
 }
 
+/**
+ * Broadcast an event.
+ * @param {string} eventName The event name.
+ * @param {Object} payload The event data / payload.
+ * @param {string|string[]} groups The groups to send the event to.
+ */
 function broadcast (eventName, payload, groups) {
   logger.traceF('broadcast', { eventName, groups })
 
@@ -152,7 +203,7 @@ function broadcast (eventName, payload, groups) {
 }
 
 /**
- * MFuSes service, event calling helper.
+ * MFuSes Helper.
  */
 const mfusesHelper = {
   call,
@@ -161,5 +212,7 @@ const mfusesHelper = {
 }
 module.exports.mfusesHelper = mfusesHelper
 
-// export core molecular object too
+/**
+ * @type Moleculer
+ */
 module.exports.Moleculer = Moleculer
