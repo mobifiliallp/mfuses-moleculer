@@ -16,7 +16,7 @@
   "dependencies": {
     "config": "^3.2.2",
     "is-stream": "^1.1.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "mf-logger": "github:mobifiliallp/mf-logger",
     "moleculer": "^0.13.10"
   },
