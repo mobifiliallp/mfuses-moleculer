@@ -14,7 +14,7 @@
   "author": "Gopal Raichur",
   "license": "MIT",
   "dependencies": {
-    "config": "^3.2.2",
+    "config": "^3.3.8",
     "is-stream": "^1.1.0",
     "lodash": "^4.17.15",
     "mf-logger": "github:mobifiliallp/mf-logger",
